@@ -5,11 +5,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
-# DEBUG selon l'environnement
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# 🎯 Détection environnement Railway
+RAILWAY_ENVIRONMENT = os.environ.get('RAILWAY_ENVIRONMENT_NAME') is not None
+IS_PRODUCTION = 'DATABASE_URL' in os.environ or RAILWAY_ENVIRONMENT
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
+if IS_PRODUCTION:
+    # 🚀 PRODUCTION Railway
+    DEBUG = False
+    ALLOWED_HOSTS = ['.railway.app']
 
+    import dj_database_url
+
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
+    print("🚀 PRODUCTION: Using Railway PostgreSQL")
+
+else:
+    # 🏠 LOCAL Development
+    DEBUG = True
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'gestion_stock_it',
+            'USER': 'postgres',
+            'PASSWORD': 'OnibaJ5zWy&0df',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+    print("🏠 LOCAL: Using local PostgreSQL")
+
+# Vos autres settings...
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,7 +64,20 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
+WSGI_APPLICATION = 'backend.wsgi.application'
 
+# CORS configuration
+if IS_PRODUCTION:
+    CORS_ALLOWED_ORIGINS = [
+        "https://your-app.vercel.app",  # À changer après déploiement Vercel
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+    ]
+    CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement
+
+# Reste de votre config...
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -52,51 +94,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
-# Debug complet
-print("🔍 ALL ENVIRONMENT VARIABLES:")
-for key, value in os.environ.items():
-    if 'DATABASE' in key or 'POSTGRES' in key:
-        print(f"   {key} = {value[:50]}...")
-
-print(f"📊 DATABASE_URL exists: {'DATABASE_URL' in os.environ}")
-print(f"📊 POSTGRES_URL exists: {'POSTGRES_URL' in os.environ}")
-
-# Configuration base de données
-if 'DATABASE_URL' in os.environ:
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-    }
-    print("🚀 Using Railway PostgreSQL")
-elif 'POSTGRES_URL' in os.environ:  # Parfois Railway utilise POSTGRES_URL
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('POSTGRES_URL'))
-    }
-    print("🚀 Using Railway PostgreSQL (POSTGRES_URL)")
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'gestion_stock_it',
-            'USER': 'postgres',
-            'PASSWORD': 'OnibaJ5zWy&0df',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
-    print("🏠 Using local PostgreSQL")
-
-# CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://your-app.vercel.app",  # À changer
-]
-
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-
-# Reste de votre configuration...
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
