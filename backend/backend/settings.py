@@ -129,35 +129,36 @@ REST_FRAMEWORK = {
     ),
 }
 
-# 🎯 CRÉATION TEMPORAIRE D'ADMIN EN PRODUCTION - À SUPPRIMER APRÈS !
+# 🔄 FORCE MIGRATIONS EN PRODUCTION - TEMPORAIRE
 if IS_PRODUCTION:
+    import subprocess
+    import sys
+
+
+    def run_migrations():
+        try:
+            print("🔄 FORÇAGE DES MIGRATIONS EN PRODUCTION...")
+
+            # Exécuter les migrations
+            result = subprocess.run([
+                sys.executable, 'manage.py', 'migrate', '--verbosity=2'
+            ], capture_output=True, text=True)
+
+            print("STDOUT:", result.stdout)
+            print("STDERR:", result.stderr)
+            print("Return code:", result.returncode)
+
+        except Exception as e:
+            print(f"❌ Erreur migrations: {e}")
+
+
+    # Exécuter au démarrage
+    from django.apps import AppConfig
     from django.db.models.signals import post_migrate
     from django.dispatch import receiver
 
 
     @receiver(post_migrate)
-    def create_admin_temp(sender, **kwargs):
-        if kwargs['app_config'].name == 'django.contrib.auth':
-            from django.contrib.auth.models import User
-
-            # 🔐 IDENTIFIANTS ADMIN - CHANGEZ SI NÉCESSAIRE
-            username = 'Admin'
-            email = 'admin@gestionstock.app'
-            password = 'AdminRailway2025!Secure'
-
-            if not User.objects.filter(username=username).exists():
-                try:
-                    User.objects.create_superuser(username, email, password)
-                    print("=" * 50)
-                    print("🎉 ADMIN CRÉÉ AUTOMATIQUEMENT EN PRODUCTION")
-                    print(f"👤 Username: {username}")
-                    print(f"📧 Email: {email}")
-                    print(f"🔑 Password: {password}")
-                    print(f"🌐 URL Admin: https://votre-backend.railway.app/admin/")
-                    print("⚠️  SUPPRIMEZ ce code après test !")
-                    print("=" * 50)
-                except Exception as e:
-                    print(f"❌ Erreur création admin: {e}")
-                    logging.error(f"Erreur création admin: {e}")
-            else:
-                print(f"✅ Admin '{username}' existe déjà en production")
+    def force_migrations(sender, **kwargs):
+        if kwargs['app_config'].name == 'stock':  # Votre app principale
+            run_migrations()
