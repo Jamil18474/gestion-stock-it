@@ -26,6 +26,10 @@
 
 ---
 
+## Déploiement
+
+L'URL du Frontend est accessible sur https://gestion-stock-it.vercel.app/
+
 ## 📝 Notes
 
 - Les variables d’environnement doivent être définies dans `.env`.

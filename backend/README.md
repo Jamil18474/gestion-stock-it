@@ -23,6 +23,10 @@ python manage.py test stock
 
 ---
 
+## Déploiement
+
+L'URL du Backend est accessible sur https://gestion-stock-it-production.up.railway.app/api/
+
 ## 📝 Notes
 
 - Pensez à bien configurer les CORS si vous utilisez le frontend séparément.
