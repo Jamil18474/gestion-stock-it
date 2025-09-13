@@ -129,36 +129,3 @@ REST_FRAMEWORK = {
     ),
 }
 
-# 🔄 FORCE MIGRATIONS EN PRODUCTION - TEMPORAIRE
-if IS_PRODUCTION:
-    import subprocess
-    import sys
-
-
-    def run_migrations():
-        try:
-            print("🔄 FORÇAGE DES MIGRATIONS EN PRODUCTION...")
-
-            # Exécuter les migrations
-            result = subprocess.run([
-                sys.executable, 'manage.py', 'migrate', '--verbosity=2'
-            ], capture_output=True, text=True)
-
-            print("STDOUT:", result.stdout)
-            print("STDERR:", result.stderr)
-            print("Return code:", result.returncode)
-
-        except Exception as e:
-            print(f"❌ Erreur migrations: {e}")
-
-
-    # Exécuter au démarrage
-    from django.apps import AppConfig
-    from django.db.models.signals import post_migrate
-    from django.dispatch import receiver
-
-
-    @receiver(post_migrate)
-    def force_migrations(sender, **kwargs):
-        if kwargs['app_config'].name == 'stock':  # Votre app principale
-            run_migrations()
