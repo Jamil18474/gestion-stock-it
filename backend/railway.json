@@ -3,8 +3,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn your_project.wsgi",
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 100
+    "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn your_project.wsgi"
   }
 }
