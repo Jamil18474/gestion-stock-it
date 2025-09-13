@@ -67,7 +67,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # CORS
 if IS_PRODUCTION:
     CORS_ALLOWED_ORIGINS = [
-        "https://your-app.vercel.app",  # À changer après déploiement frontend
+        "https://gestion-stock-it.vercel.app", 
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
