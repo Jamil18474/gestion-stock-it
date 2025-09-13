@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
-import logging
+from datetime import timedelta
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
 
 # 🛡️ Configuration base de données
 def get_database_config():
@@ -29,7 +29,6 @@ def get_database_config():
                 'PORT': '5432',
             }
         }
-
 
 DATABASES = get_database_config()
 
@@ -115,7 +114,7 @@ USE_TZ = True
 
 # 📁 Fichiers statiques - CRUCIAL pour Railway
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← FIX !
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Fichiers media (optionnel)
 MEDIA_URL = '/media/'
@@ -123,9 +122,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),  # 24h au lieu de 5min
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),   # 7 jours
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
-

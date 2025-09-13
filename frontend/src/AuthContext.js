@@ -1,14 +1,39 @@
 import React, { createContext, useState, useEffect } from 'react';
+import axios from './api/axios';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
-    const [user, setUser] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setIsAuthenticated(!!localStorage.getItem('token'));
-        setUser(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null);
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+
+        if (token && userData) {
+            // Vérifier si le token est encore valide
+            axios.get('/token/verify/', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(() => {
+                setIsAuthenticated(true);
+                setUser(JSON.parse(userData));
+            })
+            .catch(() => {
+                // Token invalide, nettoyer
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setIsAuthenticated(false);
+                setUser(null);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+        } else {
+            setLoading(false);
+        }
     }, []);
 
     const login = (token, userData) => {
@@ -24,6 +49,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
     };
+
+    if (loading) {
+        return <div>Chargement...</div>; // ou votre composant de loading
+    }
 
     return (
         <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
