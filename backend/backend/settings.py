@@ -18,13 +18,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',  # ← Ajoutez ça pour CORS
+    'corsheaders',
     'djoser',
     'stock',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # ← Ajoutez ça en premier
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,15 +54,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# 🎯 CONFIGURATION BASE DE DONNÉES INTELLIGENTE
+# 🎯 CONFIGURATION BASE DE DONNÉES
 if 'DATABASE_URL' in os.environ:
-    # Production : Railway fournit DATABASE_URL automatiquement
+    # Production Railway
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
+    print("🚀 Using Railway PostgreSQL")  # Debug log
 else:
-    # Local : Votre config actuelle
+    # Local development
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -73,15 +74,17 @@ else:
             'PORT': '5432',
         }
     }
+    print("🏠 Using local PostgreSQL")  # Debug log
 
-# CORS pour communiquer avec React
+# CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React en local
-    "https://your-app.vercel.app",  # React en production (à changer)
+    "http://localhost:3000",
+    "https://your-app.vercel.app",  # À changer
 ]
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # En développement, autorise tout
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 
+# Reste de votre configuration...
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
