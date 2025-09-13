@@ -5,40 +5,38 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
-# 🎯 Détection environnement Railway
-RAILWAY_ENVIRONMENT = os.environ.get('RAILWAY_ENVIRONMENT_NAME') is not None
-IS_PRODUCTION = 'DATABASE_URL' in os.environ or RAILWAY_ENVIRONMENT
 
-if IS_PRODUCTION:
-    # 🚀 PRODUCTION Railway
-    DEBUG = False
-    ALLOWED_HOSTS = ['.railway.app']
+# 🛡️ Configuration base de données
+def get_database_config():
+    database_url = os.environ.get('DATABASE_URL')
 
-    import dj_database_url
-
-    DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-    }
-    print("🚀 PRODUCTION: Using Railway PostgreSQL")
-
-else:
-    # 🏠 LOCAL Development
-    DEBUG = True
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'gestion_stock_it',
-            'USER': 'postgres',
-            'PASSWORD': 'OnibaJ5zWy&0df',
-            'HOST': 'localhost',
-            'PORT': '5432',
+    if database_url and database_url.startswith('postgresql://'):
+        print("🚀 PRODUCTION: Using Railway PostgreSQL")
+        import dj_database_url
+        return {
+            'default': dj_database_url.parse(database_url)
         }
-    }
-    print("🏠 LOCAL: Using local PostgreSQL")
+    else:
+        print("🏠 LOCAL: Using local PostgreSQL")
+        return {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'gestion_stock_it',
+                'USER': 'postgres',
+                'PASSWORD': 'OnibaJ5zWy&0df',
+                'HOST': 'localhost',
+                'PORT': '5432',
+            }
+        }
 
-# Vos autres settings...
+
+DATABASES = get_database_config()
+
+# Environnement
+IS_PRODUCTION = os.environ.get('DATABASE_URL') is not None
+DEBUG = not IS_PRODUCTION
+ALLOWED_HOSTS = ['.railway.app'] if IS_PRODUCTION else ['localhost', '127.0.0.1']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,18 +64,17 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'backend.urls'
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# CORS configuration
+# CORS
 if IS_PRODUCTION:
     CORS_ALLOWED_ORIGINS = [
-        "https://your-app.vercel.app",  # À changer après déploiement Vercel
+        "https://your-app.vercel.app",  # À changer après déploiement frontend
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
     ]
-    CORS_ALLOW_ALL_ORIGINS = True  # Pour le développement
+    CORS_ALLOW_ALL_ORIGINS = DEBUG
 
-# Reste de votre config...
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -115,7 +112,13 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+# 📁 Fichiers statiques - CRUCIAL pour Railway
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← FIX !
+
+# Fichiers media (optionnel)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
