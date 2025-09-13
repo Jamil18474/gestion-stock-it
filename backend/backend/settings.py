@@ -5,9 +5,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
-DEBUG = True
+# DEBUG selon l'environnement
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.railway.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,11 +18,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',  # ← Ajoutez ça pour CORS
     'djoser',
     'stock',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # ← Ajoutez ça en premier
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,16 +54,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'gestion_stock_it',
-        'USER': 'postgres',
-        'PASSWORD': 'OnibaJ5zWy&0df',
-        'HOST': 'localhost',
-        'PORT': '5432',
+# 🎯 CONFIGURATION BASE DE DONNÉES INTELLIGENTE
+if 'DATABASE_URL' in os.environ:
+    # Production : Railway fournit DATABASE_URL automatiquement
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
-}
+else:
+    # Local : Votre config actuelle
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'gestion_stock_it',
+            'USER': 'postgres',
+            'PASSWORD': 'OnibaJ5zWy&0df',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+
+# CORS pour communiquer avec React
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React en local
+    "https://your-app.vercel.app",  # React en production (à changer)
+]
+
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # En développement, autorise tout
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -78,13 +98,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'fr-fr'
-
 TIME_ZONE = 'Europe/Paris'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 STATIC_URL = '/static/'

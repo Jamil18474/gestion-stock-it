@@ -3,3 +3,6 @@ djangorestframework
 psycopg2-binary
 djoser
 djangorestframework-simplejwt
+gunicorn
+dj-database-url
+django-cors-headers
