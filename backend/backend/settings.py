@@ -67,11 +67,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # CORS
 if IS_PRODUCTION:
     CORS_ALLOWED_ORIGINS = [
-        "https://gestion-stock-it.vercel.app", 
+        "https://gestion-stock-it.vercel.app"
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
+        "http://localhost:3000"
     ]
     CORS_ALLOW_ALL_ORIGINS = DEBUG
 
